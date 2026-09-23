@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pincode Analytics</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: #f6f6f3;
+      color: #2f2a26;
+    }
+    header {
+      background: #2f2a26;
+      color: #fff;
+      padding: 22px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    header h1 { margin: 0; font-size: 22px; }
+    header button, header select {
+      border: 1px solid rgba(255,255,255,.35);
+      background: transparent;
+      color: #fff;
+      padding: 9px 13px;
+      border-radius: 6px;
+    }
+    header button { cursor: pointer; }
+    main { max-width: 1300px; margin: 0 auto; padding: 24px; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e8e4dd;
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .card small { color: #82786f; }
+    .card strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 26px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    section {
+      background: #fff;
+      border: 1px solid #e8e4dd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    section h2 {
+      margin: 0;
+      padding: 16px 18px;
+      font-size: 16px;
+      border-bottom: 1px solid #eee;
+    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 11px 13px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    th { color: #756b62; font-weight: 600; }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .ok { background: #eaf4ed; color: #2f6b47; }
+    .bad { background: #fbecea; color: #a63a2c; }
+    .err { background: #f1eeee; color: #666; }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .toolbar button {
+      border: 1px solid #cfc8bf;
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .muted { color: #82786f; padding: 18px; }
+    @media (max-width: 1000px) {
+      .cards { grid-template-columns: repeat(3, 1fr); }
+      .grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      main { padding: 14px; }
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .card { padding: 14px; }
+      .card strong { font-size: 21px; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Pincode Analytics</h1>
+  <div>
+    <select id="days">
+      <option value="1">Today</option>
+      <option value="7">Last 7 days</option>
+      <option value="30" selected>Last 30 days</option>
+      <option value="90">Last 90 days</option>
+      <option value="365">Last 365 days</option>
+    </select>
+    <button id="refresh">Refresh</button>
+    <button id="export">Export CSV</button>
+  </div>
+</header>
+
+<main>
+  <div class="cards">
+    <div class="card"><small>Total searches</small><strong id="total">—</strong></div>
+    <div class="card"><small>Unique pincodes</small><strong id="unique">—</strong></div>
+    <div class="card"><small>Serviceable</small><strong id="serviceable">—</strong></div>
+    <div class="card"><small>Unavailable</small><strong id="unavailable">—</strong></div>
+    <div class="card"><small>Express</small><strong id="express">—</strong></div>
+    <div class="card"><small>Standard</small><strong id="standard">—</strong></div>
+  </div>
+
+  <div class="grid">
+    <section>
+      <h2>Top searched pincodes</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Pincode</th>
+              <th>Searches</th>
+              <th>Available</th>
+              <th>Unavailable</th>
+            </tr>
+          </thead>
+          <tbody id="top"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Recent searches</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Pincode</th>
+              <th>Result</th>
+              <th>Delivery</th>
+              <th>Product</th>
+            </tr>
+          </thead>
+          <tbody id="recent"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+  const $ = s => document.querySelector(s);
+
+  const escapeHtml = value =>
+    String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  function badge(result) {
+    if (result === "serviceable")
+      return '<span class="badge ok">Serviceable</span>';
+    if (result === "unavailable")
+      return '<span class="badge bad">Unavailable</span>';
+    return '<span class="badge err">Error</span>';
+  }
+
+  async function load() {
+    const days = $("#days").value;
+
+    const [summary, top, recent] = await Promise.all([
+      fetch(`/api/dashboard/summary?days=${days}`).then(r => r.json()),
+      fetch(`/api/dashboard/top-pincodes?days=${days}`).then(r => r.json()),
+      fetch(`/api/dashboard/recent?limit=50`).then(r => r.json())
+    ]);
+
+    $("#total").textContent = summary.total_searches ?? 0;
+    $("#unique").textContent = summary.unique_pincodes ?? 0;
+    $("#serviceable").textContent = summary.serviceable ?? 0;
+    $("#unavailable").textContent = summary.unavailable ?? 0;
+    $("#express").textContent = summary.express ?? 0;
+    $("#standard").textContent = summary.standard ?? 0;
+
+    $("#top").innerHTML = top.length
+      ? top.map(row => `
+        <tr>
+          <td><strong>${escapeHtml(row.pincode)}</strong></td>
+          <td>${row.searches}</td>
+          <td>${row.serviceable}</td>
+          <td>${row.unavailable}</td>
+        </tr>
+      `).join("")
+      : '<tr><td colspan="4" class="muted">No data yet.</td></tr>';
+
+    $("#recent").innerHTML = recent.length
+      ? recent.map(row => `
+        <tr>
+          <td>${new Date(row.created_at).toLocaleString()}</td>
+          <td><strong>${escapeHtml(row.pincode)}</strong></td>
+          <td>${badge(row.result)}</td>
+          <td>${escapeHtml(row.delivery_type || "—")}</td>
+          <td>${escapeHtml(row.product_handle || "—")}</td>
+        </tr>
+      `).join("")
+      : '<tr><td colspan="5" class="muted">No searches yet.</td></tr>';
+  }
+
+  $("#refresh").addEventListener("click", load);
+
+  $("#days").addEventListener("change", load);
+
+  $("#export").addEventListener("click", () => {
+    const days = $("#days").value;
+    window.location.href = `/api/dashboard/export?days=${days}`;
+  });
+
+  load().catch(error => {
+    console.error(error);
+    alert("Unable to load dashboard data.");
+  });
+</script>
+</body>
+</html>
