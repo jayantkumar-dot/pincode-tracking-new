@@ -115,6 +115,160 @@
       .card strong { font-size: 21px; }
     }
   </style>
+  <style>
+/* ========================= */
+
+#preloader{
+position:fixed;
+inset:0;
+background:#F5F0E7;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:999999;
+transition:opacity .8s;
+}
+
+/* ========================= */
+
+.loader-content{
+width:430px;
+text-align:center;
+}
+
+/* ========================= */
+
+.board{
+position:relative;
+padding:70px 40px;
+border-radius:26px;
+background:linear-gradient(
+145deg,
+#E8D8BE,
+#D9C4A0
+);
+overflow:hidden;
+box-shadow:
+
+0 25px 60px rgba(0,0,0,.12);
+animation:float 4s ease-in-out infinite;
+}
+
+/* wood texture */
+
+.board:before{
+content:"";
+position:absolute;
+inset:0;
+background: #9e402d;
+opacity:1;
+}
+
+/* logo */
+
+.logo{
+font-size:38px;
+letter-spacing:8px;
+font-weight:700;
+color:#463728;
+position:relative;
+z-index:2;
+}
+
+/* tagline */
+
+.tagline{
+margin-top:12px;
+font-size:13px;
+letter-spacing:2px;
+text-transform:uppercase;
+color:#fff;
+position:relative;
+z-index:2;
+}
+
+/* luxury light */
+
+.light{
+position:absolute;
+top:-40%;
+left:-120%;
+width:90px;
+height:220%;
+background:
+
+linear-gradient(
+
+90deg,
+
+transparent,
+
+rgba(255,255,255,.55),
+
+transparent
+
+);
+transform:rotate(25deg);
+
+animation:sweep 2.8s linear infinite;
+
+}
+
+/* ========================= */
+
+.progress{
+margin-top:40px;
+height:6px;
+background:#d8c9b2;
+overflow:hidden;
+}
+
+.progress span{
+display:block;
+height:100%;
+width:0;
+background:#9e402d;
+animation:loading 2.8s linear forwards;
+}
+
+/* ========================= */
+
+@keyframes sweep{
+
+100%{
+
+left:160%;
+
+}
+
+}
+
+@keyframes float{
+
+0%,100%{
+
+transform:translateY(0px);
+
+}
+
+50%{
+
+transform:translateY(-8px);
+
+}
+
+}
+
+@keyframes loading{
+
+100%{
+
+width:100%;
+
+}
+
+}
+</style>
 </head>
 <body>
 <header>
