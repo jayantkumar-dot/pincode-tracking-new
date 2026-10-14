@@ -1,17 +1,16 @@
+
 /*
   SEPARATE PINCODE TRACKER
   ------------------------
   This file does NOT modify the existing SandeepEdd class.
   It observes the existing widget from outside.
 
-  IMPORTANT:
-  1. Change TRACKING_URL to your deployed /api/track endpoint.
-  2. Change TRACKER_KEY to the same value used by TRACKER_API_KEY.
+  Updated for the new sandeep-edd Liquid markup.
 */
 
 (() => {
-  const TRACKING_URL = "https://YOUR-TRACKING-DOMAIN.com/api/track";
-  const TRACKER_KEY = "YOUR_TRACKER_API_KEY";
+  const TRACKING_URL = "https://pincode-tracking-new.onrender.com/api/track";
+  const TRACKER_KEY = "edd_tracking_8f72kL91xP42mQ7zjayant";
 
   const SESSION_KEY = "edd_tracking_session_id";
 
@@ -77,25 +76,23 @@
     });
   }
 
+  // UPDATED: The widget's data-state is on <sandeep-edd>.
   function getWidget() {
-    return document.querySelector("sandeep-edd .pc-widget");
+    return document.querySelector("sandeep-edd.edd");
   }
 
+  // UPDATED: New pincode input class.
   function getPincode() {
-    return document.querySelector("sandeep-edd .pc-input")?.value || "";
+    return getWidget()?.querySelector(".edd__input")?.value?.trim() || "";
   }
 
+  // UPDATED: New delivery date selector.
   function getDeliveryDate() {
-    const first =
-      document.querySelector("sandeep-edd [data-pc-date-first]")?.textContent?.trim();
-
-    const range =
-      document.querySelector("sandeep-edd [data-pc-date]")?.textContent?.trim();
-
-    return first || range || null;
+    return getWidget()
+      ?.querySelector("[data-edd-date]")
+      ?.textContent?.trim() || null;
   }
 
-  let lastCheckPincode = "";
   let lastState = "";
 
   function observeState() {
@@ -108,10 +105,8 @@
     lastState = state;
 
     /*
-      The existing code changes:
-      loading -> express / standard / unavail / error
-
-      So we track only the final result states.
+      Track only final result states.
+      Loading and default states are ignored.
     */
     if (
       state === "express" ||
@@ -158,8 +153,6 @@
           delivery_date: null
         });
       }
-
-      lastCheckPincode = pin;
     }
   }
 
@@ -172,8 +165,8 @@
     }
 
     /*
-      Observe only the existing data-state attribute.
-      We do NOT change the existing widget/class/code.
+      Observe only data-state.
+      The existing EDD widget remains unchanged.
     */
     const observer = new MutationObserver(observeState);
 
