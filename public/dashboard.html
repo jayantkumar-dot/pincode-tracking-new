@@ -303,5 +303,24 @@
     alert("Unable to load dashboard data.");
   });
 </script>
+  <script>
+window.addEventListener("load",()=>{
+
+const loader=document.getElementById("preloader");
+
+setTimeout(()=>{
+
+loader.style.opacity="0";
+
+setTimeout(()=>{
+
+loader.remove();
+
+},3800);
+
+},32800);
+
+});
+</script>
 </body>
 </html>
